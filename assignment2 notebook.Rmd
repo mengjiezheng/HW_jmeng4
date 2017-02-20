@@ -1,0 +1,134 @@
+---
+title: "R Notebook"
+output: html_notebook
+---
+fileURL <- "https://ed-public-download.apps.cloud.gov/downloads/Most-Recent-Cohorts-Scorecard-Elements.csv"
+download.file(fileURL,destfile = "CollegeData.csv",method = "auto")
+list.files(".")
+CollegeScorecard <- read.csv("CollegeData.csv",na.strings = c("NULL","PrivacySuppressed"))
+library(tibble)
+library(dplyr)
+CSD <- select_if(CollegeScorecard, is.numeric)
+dim(CSD)
+
+# NOW WILL REMOVE SOME UNUSEFUL COLUMNS(somthint wrong with my loptop, I know a easy way to delete columns, but it just can't work on my loptop)
+CSD$ ï..UNITID <- CSD$OPEID <- CSD$OPEID6 <- CSD$HCM2 <- CSD$CONTROL <- CSD$LOCALE <- CSD$HBCU <- CSD$PBI <- NULL
+CSD$ANNHI <- CSD$TRIBAL <- CSD$AANAPII <- CSD$NANTI <- CSD$MENONLY <- CSD$WOMENONLY <- CSD$DISTANCEONLY <- NULL
+CSD$HSI <- CSD$SATVR25  <- CSD$SATVR75<- CSD$SATMT25<- CSD$SATMT75 <- CSD$SATWR25 <- CSD$SATWR75 <-NULL
+CSD$ACTCM25 <- CSD$ACTCM75 <- CSD$ACTEN25 <- CSD$ACTEN75 <- CSD$ACTMT25 <-CSD$ACTMT75 <- CSD$ACTWR25 <- CSD$ACTWR75 <- NULL
+CSD$SAT_AVG_ALL <- CSD$UGDS_WHITE <- CSD$UGDS_BLACK <- CSD$UGDS_HISP <- CSD$UGDS_ASIAN <- CSD$UGDS_AIAN <- CSD$UGDS_NHPI <- CSD$UGDS_2MOR <- CSD$UGDS_NRA <- CSD$UGDS_UNKN <- NULL
+CSD$PCIP01 <- NULL
+CSD$PCIP02 <- NULL
+CSD$PCIP03 <- NULL
+CSD$PCIP04 <- NULL
+CSD$PCIP05 <- NULL
+CSD$PCIP06 <- NULL
+CSD$PCIP09 <- NULL
+CSD$PCIP10 <- NULL
+CSD$PCIP11 <- NULL
+CSD$PCIP12 <- NULL
+CSD$PCIP13 <- NULL
+CSD$PCIP14 <- NULL
+CSD$PCIP15 <- NULL
+CSD$PCIP16 <- NULL
+CSD$PCIP19 <- NULL
+CSD$PCIP22 <- NULL
+CSD$PCIP23 <- NULL
+CSD$PCIP24 <- NULL
+CSD$PCIP25 <- NULL
+CSD$PCIP26 <- NULL
+CSD$PCIP27 <- NULL
+CSD$PCIP29 <- NULL
+CSD$PCIP30 <- NULL
+CSD$PCIP31 <- NULL
+CSD$PCIP38 <- NULL
+CSD$PCIP39 <- NULL
+CSD$PCIP40 <- NULL
+CSD$PCIP41 <- NULL
+CSD$PCIP42 <- NULL
+CSD$PCIP43 <- NULL
+CSD$PCIP44 <- NULL
+CSD$PCIP45 <- NULL
+CSD$PCIP46 <- NULL
+CSD$PCIP47 <- NULL
+CSD$PCIP48 <- NULL
+CSD$PCIP49 <- NULL
+CSD$PCIP50 <- NULL
+CSD$PCIP51 <- NULL
+CSD$PCIP52 <- NULL
+CSD$PCIP54 <- NULL
+CSD$SATVRMID <- NULL
+CSD$SATWRMID <- NULL
+CSD$ACTENMID <- NULL
+CSD$ACTMTMID <- NULL
+CSD$ACTWRMID <- NULL
+CSD$SAT_AVG <- NULL
+CSD$SATMTMID <- NULL
+CSD$ACTCMMID <- NULL
+CSD$UG25ABV <- NULL
+CSD$CURROPER <- NULL
+attach(CSD)
+sapply(CSD[sapply(CSD,is.numeric)],mean,na.rm=T)   
+
+
+#Now WILL RPLACE THE NA VALUW BY USING MEAN
+CSD$PREDDEG[which(is.na(CSD$PREDDEG))]<-1.799688e+00
+CSD$RELAFFIL[which(is.na(CSD$RELAFFIL))]<-  5.256576e+00
+CSD$UGDS[which(is.na(CSD$UGDS))]<- 2.332159e+03
+CSD$PPTUG_EF[which(is.na(CSD$PPTUG_EF))]<-2.259237e-01
+CSD$NPT4_PUB[which(is.na(CSD$NPT4_PUB))]<-9.624656e+03 
+CSD$NPT4_PRIV[which(is.na(CSD$NPT4_PRIV))]<- 1.823018e+04 
+CSD$NPT41_PUB[which(is.na(CSD$NPT41_PUB))]<- 8.012644e+03
+CSD$NPT42_PUB[which(is.na(CSD$NPT42_PUB))]<- 8.871572e+03
+CSD$NPT43_PUB[which(is.na(CSD$NPT43_PUB))]<- 1.108605e+04
+CSD$NPT44_PUB[which(is.na(CSD$NPT44_PUB))]<-  1.331889e+04
+CSD$NPT45_PUB[which(is.na(CSD$NPT45_PUB))]<-  1.452379e+04
+CSD$NPT41_PRIV[which(is.na(CSD$NPT41_PRIV))]<-  1.674695e+04
+CSD$NPT42_PRIV[which(is.na(CSD$NPT42_PRIV))]<-  1.782597e+04
+CSD$NPT43_PRIV[which(is.na(CSD$NPT43_PRIV))]<-  2.004501e+04
+CSD$NPT44_PRIV[which(is.na(CSD$NPT44_PRIV))]<- 2.269517e+04  
+CSD$NPT45_PRIV[which(is.na(CSD$NPT45_PRIV))]<-  2.500198e+04
+CSD$PCTPELL[which(is.na(CSD$PCTPELL))]<- 5.320927e-01  
+CSD$RET_FT4[which(is.na(CSD$RET_FT4))]<- 7.070809e-01 
+CSD$RET_FTL4[which(is.na(CSD$RET_FTL4))]<- 6.861552e-01
+CSD$RET_PT4[which(is.na(CSD$RET_PT4))]<-  4.556388e-01
+CSD$RET_PTL4[which(is.na(CSD$RET_PTL4))]<- 5.646794e-01 
+CSD$PCTFLOAN[which(is.na(CSD$PCTFLOAN))]<-  5.230919e-01     
+CSD$MD_EARN_WNE_P10[which(is.na(CSD$MD_EARN_WNE_P10))]<- 3.284950e+04   
+CSD$GT_25K_P6[which(is.na(CSD$GT_25K_P6))]<-  5.006795e-01
+CSD$GRAD_DEBT_MDN_SUPP[which(is.na(CSD$GRAD_DEBT_MDN_SUPP))]<-  1.683220e+04 
+CSD$GRAD_DEBT_MDN10YR_SUPP[which(is.na(CSD$GRAD_DEBT_MDN10YR_SUPP))]<-  1.727474e+02
+CSD$RPY_3YR_RT_SUPP[which(is.na(CSD$RPY_3YR_RT_SUPP))]<-    4.172398e-01 
+CSD$C150_4_POOLED_SUPP[which(is.na(CSD$C150_4_POOLED_SUPP))]<- 4.800460e-01
+CSD$C150_L4_POOLED_SUPP[which(is.na(CSD$C150_L4_POOLED_SUPP))]<- 5.538500e-01  
+#ALL THE NA VALUES ARE REPLACED BY THEIR THE COLUMNS MEAN VALUE
+
+#WE WILL KNOW TO CHE CK THE RELATIONSHIP BETWEEN DIFFERENT VARIABLES 
+cor(CSD)  # find the correlation between variables
+CSD$GRAD_DEBT_MDN10YR_SUPP <- NULL # the corrlation between MDN10YR and GRAN_DEBT are 1, so I decided delete this column.
+fit <- lm(GRAD_DEBT_MDN_SUPP~GT_25K_P6,CSD) # fit a simple linear regression model 
+summary(fit)
+
+# Stepwise Regression
+library(MASS)
+fit1 <- lm(GRAD_DEBT_MDN_SUPP~GT_25K_P6+C150_4_POOLED_SUPP+C150_L4_POOLED_SUPP+MD_EARN_WNE_P10+NPT4_PRIV+NPT4_PUB+NPT41_PRIV+NPT41_PUB+NPT42_PRIV+ NPT42_PUB+NPT43_PRIV+NPT43_PUB+NPT44_PRIV+NPT44_PRIV+NPT44_PUB+NPT45_PRIV+NPT45_PUB+PCTFLOAN+PCTPELL+PPTUG_EF+PREDDEG+RELAFFIL+RET_FT4+RET_FTL4+ RET_PT4+RET_PTL4+RPY_3YR_RT_SUPP+UGDS)
+summary(fit1)
+step <- stepAIC(fit1, direction="both")
+step$anova # display results
+
+# Global test of model assumptions
+library(gvlma)
+gvmodel <- gvlma(fit) 
+summary(gvmodel)
+
+This is an [R Markdown](http://rmarkdown.rstudio.com) Notebook. When you execute code within the notebook, the results appear beneath the code. 
+
+Try executing this chunk by clicking the *Run* button within the chunk or by placing your cursor inside it and pressing *Ctrl+Shift+Enter*. 
+
+```{r}
+plot(cars)
+```
+
+Add a new chunk by clicking the *Insert Chunk* button on the toolbar or by pressing *Ctrl+Alt+I*.
+
+When you save the notebook, an HTML file containing the code and output will be saved alongside it (click the *Preview* button or press *Ctrl+Shift+K* to preview the HTML file).
