@@ -1,4 +1,4 @@
-fileURL <- "https://ed-public-download.apps.cloud.gov/downloads/Most-Recent-Cohorts-Scorecard-Elements.csv"
+  fileURL <- "https://ed-public-download.apps.cloud.gov/downloads/Most-Recent-Cohorts-Scorecard-Elements.csv"
 download.file(fileURL,destfile = "CollegeData.csv",method = "auto")
 list.files(".")
 CollegeScorecard <- read.csv("CollegeData.csv",na.strings = c("NULL","PrivacySuppressed"))
