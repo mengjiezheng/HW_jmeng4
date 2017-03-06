@@ -1,19 +1,19 @@
 ---
 title: "R Notebook"
-output: html_notebook fileURL <- "https://ed-public-download.apps.cloud.gov/downloads/Most-Recent-Cohorts-Scorecard-Elements.csv"
+output: html_notebook html_notebook fileURL <- "https://ed-public-download.apps.cloud.gov/downloads/Most-Recent-Cohorts-Scorecard-Elements.csv"
 download.file(fileURL,destfile = "CollegeData.csv",method = "auto")
 list.files(".")
 ---
+
+
 ```{r}
 CollegeScorecard <- read.csv("CollegeData.csv",na.strings = c("NULL","PrivacySuppressed"))
 library(tibble)
 library(dplyr)
 CD <- select_if(CollegeScorecard, is.numeric)
 dim(CD)
+
 ```
-
-
-
 # We will now remove some variables
 ```{r}
 CSD$OPEID <- CSD$OPEID6 <- CSD$HCM2 <- CSD$CONTROL <- CSD$LOCALE <- CSD$HBCU <- CSD$PBI <- NULL
@@ -75,8 +75,8 @@ CSD$CURROPER <- NULL
 CSD$GRAD_DEBT_MDN10YR_SUPP <-NULL
 attach(CSD)
 sapply(CSD[sapply(CSD,is.numeric)],mean,na.rm=T) 
-```
 
+```
 # we will now repalce all NAs by theri average value
 ```{r}
 CSD$PREDDEG[which(is.na(CSD$PREDDEG))]<-1.799688e+00
@@ -109,78 +109,37 @@ CSD$C150_4_POOLED_SUPP[which(is.na(CSD$C150_4_POOLED_SUPP))]<- 4.800460e-01
 CSD$C150_L4_POOLED_SUPP[which(is.na(CSD$C150_L4_POOLED_SUPP))]<- 5.538500e-01  
 
 ```
+
+# We will #WE WILL KNOW TO CHE CK THE RELATIONSHIP BETWEEN DIFFERENT VARIABLES 
+```{r}
+cor(CSD) # find the correlation between variables
+fit <- lm(GRAD_DEBT_MDN_SUPP~GT_25K_P6,CSD) # fit a simple linear regression model 
+summary(fit)
+```
+
 # Stepwise Regression
 ```{r}
-cor(CSD) 
 library(MASS)
 fit1 <- lm(GRAD_DEBT_MDN_SUPP~GT_25K_P6+C150_4_POOLED_SUPP+C150_L4_POOLED_SUPP+MD_EARN_WNE_P10+NPT4_PRIV+NPT4_PUB+NPT41_PRIV+NPT41_PUB+NPT42_PRIV+ NPT42_PUB+NPT43_PRIV+NPT43_PUB+NPT44_PRIV+NPT44_PUB+NPT45_PRIV+NPT45_PUB+PCTFLOAN+PCTPELL+PPTUG_EF+PREDDEG+RELAFFIL+RET_FT4+RET_FTL4+ RET_PT4+RET_PTL4+RPY_3YR_RT_SUPP+UGDS)
 summary(fit1)
 step <- stepAIC(fit1, direction="both")
 step$anova # display results
+
 ```
+# The final model is RAD_DEBT_MDN_SUPP ~ GT_25K_P6 + C150_4_POOLED_SUPP + NPT4_PRIV + NPT4_PUB + NPT41_PRIV + NPT41_PUB + NPT42_PRIV + NPT43_PRIV + NPT44_PRIV + NPT44_PUB + NPT45_PRIV + NPT45_PUB + PCTFLOAN +  PREDDEG + RELAFFIL + RET_FT4 + RET_FTL4 + RET_PT4 + RET_PTL4 + RPY_3YR_RT_SUPP + UGDS
 
-The final model isGRAD_DEBT_MDN_SUPP ~ GT_25K_P6 + C150_4_POOLED_SUPP + NPT4_PRIV + NPT4_PUB + NPT41_PRIV + NPT41_PUB + NPT42_PRIV + NPT43_PRIV + NPT44_PRIV + NPT44_PUB + NPT45_PRIV + NPT45_PUB + PCTFLOAN + PREDDEG + RELAFFIL + RET_FT4 + RET_FTL4 + RET_PT4 + RET_PTL4 + RPY_3YR_RT_SUPP + UGDS
-
-#We will first remove some variables to fit the best model
+# Global test of model assumptions
 ```{r}
-CSD$PCTPELL <- NULL
-CSD$NPT42_PUB <- NULL
-CSD$NPT43_PUB <- NULL
-CSD$PPTUG_EF <- NULL
-CSD$C150_L4_POOLED_SUPP<- NULL
-CSD$MD_EARN_WNE_P10 <- NULL
-
+library(gvlma)
+gvmodel <- gvlma(fit1) 
+summary(gvmodel)
 ```
 
 
-# We will using decision dree to predicted median debt, fist, install the requisite packages
-```{r}
-pkgs <- c("rpart", "rpart.plot", "party")
-install.packages(pkgs)
-```
-Create a training and validation set
-```{r}
-set.seed(1234)
-train <- sample(nrow(CSD), 0.7*nrow(CSD)) # 70% of data are in the training set
-CSD.train <- CSD[train,]
-CSD.validate <- CSD[-train,]
-dim(CSD.train)
-dim(CSD.validate)
-```
-# Now we will fit the tree
-```{r}
-library(rpart)
-set.seed(1234)
-dtree <- rpart(GRAD_DEBT_MDN_SUPP~.,data=CSD.train,method="anova",
-  parms=list(split="information"))
-dtree$cptable
-```
 
-```{r}
-plotcp(dtree)
-pv <- dtree$cptable[which.min(dtree$cptable[,"xerror"]),"CP"] # This automatically selects the smallest cross-validated error
-dtree.p <- prune(dtree,cp=pv)
-dtree.p
-plotcp(dtree.p)
-dtree.p$cptable
-```
 
-# Now we can plot the tree
-```{r}
-library(rpart.plot)
-prp(dtree.p,type=1,extra=100,
-    fallen.leaves = T,main="Decison Tree")
-```
 
-# We can check how the tree doest vaildation test.
-```{r}
-dtree.pred <- predict(dtree.p,CSD.validate)
-summary(dtree.pred)
-dtree.pred
 
-```
-
-Try executing this chunk by clicking the *Run* button within the chunk or by placing your cursor inside it and pressing *Ctrl+Shift+Enter*. 
 
 
 Add a new chunk by clicking the *Insert Chunk* button on the toolbar or by pressing *Ctrl+Alt+I*.
