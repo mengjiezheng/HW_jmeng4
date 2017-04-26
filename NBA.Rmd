@@ -15,7 +15,6 @@ install.packages("RCurl")
 install.packages("grid")
 install.packages("gridExtra")
 install.packages("png")
-install.packages("hexbin")
 install.packages("plyr")
 
 ```
