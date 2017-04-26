@@ -1,0 +1,60 @@
+---
+title: "Tweets Visualization"
+output: html_notebook
+---
+
+# install require packages
+```{r}
+install.packages("ggmap")
+install.packages("twitteR") 
+install.packages("RCurl")
+install.packages("rjson")
+install.packages("dplyr")
+                 
+```
+
+# we will now extracting Map
+# Forward Geocoding(Converting address/name of a place into gegraphic coordinates)
+# https://developers.google.com/maps/documentation/geocoding/intro#geocoding
+
+```{r}
+url<- "https://maps.googleapis.com/maps/api/geocode/json?latlng=38.9072,-77.0369"
+library(RCurl)
+library(rjson)
+jmap<- getURL(url)
+jmap<- fromJSON(jmap)
+jmap
+
+```
+# We can now extracting geographic coordinates for the jmap
+```{r}
+sapply(jmap$results,function(jmap){list(address=jmap$formatted_adress,latitude=jmap$geometry$location$lat,longitude=jmap$geometry$location$lng)})
+```
+
+```{r}
+library(ggmap)
+map <- get_map(location = "United State", zoom = 4, maptype = "terrain", source = "google")
+ggmap(map)
+```
+
+
+
+# we will now extracting data from tweets
+```{r}
+library(twitteR)
+api_key <- "T8CKcDTkHJJIlSJkKWCIAJqeF"
+api_secret <- "CK4wWEPHd2tliA5ghVY3eBwlCEXE7m5FZsie0gitfN4dSdH9VD"
+access_token <- "844615642993082368-RJIO1uLbjPeribYc3oUEfvy9cA2C6dS"
+access_token_secret <- "JVvpbJ5dARihNkcWLun4uCh6yTqOY4MZZrOibk6JzD9p1"
+setup_twitter_oauth(api_key, api_secret, access_token, access_token_secret)
+
+tweets <- searchTwitter("@NBA", geocode = "37.0902,-95.7129,1000mi", n=500)
+my_twets  <- do.call("rbind",lapply(tweets,as.data.frame))
+View(my_twets)
+
+```
+
+
+
+
+

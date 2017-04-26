@@ -1,0 +1,109 @@
+---
+title: "retweet network"
+output: html_notebook
+---
+
+
+# install packages and run the packages
+```{r}
+install.packages("networkD3") # it is for interactive network visualization
+install.packages("twitteR") 
+install.packages("igraph") # it is for network analysis
+install.packages("stringer")
+install.packages("dplyr")
+install.packages("qdap")
+
+library(twitteR)
+library(dplyr)
+library(qdap)
+library(networkD3)
+library(igraph)
+library(stringr) 
+
+```
+
+#we will now extracting data and collect tweets
+
+```{r}
+
+api_key <- "T8CKcDTkHJJIlSJkKWCIAJqeF"
+api_secret <- "CK4wWEPHd2tliA5ghVY3eBwlCEXE7m5FZsie0gitfN4dSdH9VD"
+access_token <- "844615642993082368-RJIO1uLbjPeribYc3oUEfvy9cA2C6dS"
+access_token_secret <- "JVvpbJ5dARihNkcWLun4uCh6yTqOY4MZZrOibk6JzD9p1"
+setup_twitter_oauth(api_key, api_secret, access_token, access_token_secret)
+
+alltweets <- twListToDF(searchTwitter("#stephencurry", n=500, retryOnRateLimit=120))
+```
+#Network analysis and visualization is computationally intensive. We will use only the first 200 tweets for demo.
+```{r}
+alltweets<-alltweets[1:200,]
+#split the data into two sets; one for retweet network and the other for mention network.
+#create an edge-list for retweet network
+sp = split(alltweets, alltweets$isRetweet)
+rt = mutate(sp[['TRUE']], sender = substr(text, 5, regexpr(':', text) - 1)) # # Extract the retweets and pull the original author's screenname
+el = as.data.frame(cbind(sender = tolower(rt$sender), receiver = tolower(rt$screenName))) 
+el = count(el, sender, receiver) #adjust retweets to create an edgelist for network
+el[1:5,] #show the first 5 edges in the edgelist
+
+```
+# Twitter’s API doesn’t tell us where a retweeter saw the tweet that they retweeted; an edge always goes from the original author of the tweet to the retweeter, so we can’t follow the diffusion of a tweet. But, we can get a sense of who is being retweeted, and we see a core of individuals engaging in a conversation at the center of the graph. Nodes are sized to their total degree (retweeting and being retweeted), and edge-width is proportional to the number of retweets between that pair. Labeled nodes are those that were retweeted at least once.
+
+```{r}
+# Based on the edge-list, create a retweet network.
+rt_graph <- graph_from_data_frame(d=el, directed=T)
+#Visualize the retweet network.
+glay = layout.fruchterman.reingold(rt_graph) 
+plot(rt_graph)
+
+
+```
+
+# we will now to improve the visualzation
+```{r}
+glay = layout.fruchterman.reingold(rt_graph)
+par(bg="gray15", mar=c(1,1,1,1))
+plot(rt_graph, layout=glay,
+     vertex.color="gray25",
+     vertex.size=(degree(rt_graph, mode = "in")), #sized by in-degree centrality
+     vertex.label = NA,
+     edge.arrow.size=0.8,
+     edge.arrow.width=0.5,
+     edge.width=edge_attr(rt_graph)$n/10, #sized by edge weight
+     edge.color=hsv(h=.95, s=1, v=.7, alpha=0.5))
+title("Retweet Network", cex.main=1, col.main="gray95")
+
+
+```
+
+#The above network visualization does not show vertex label. Let’s add a few lines to make the graph more informative. igraph is a very versatile by allowing a high degree of customization for visualization.
+```{r}
+glay = layout.fruchterman.reingold(rt_graph)
+par(bg="gray15", mar=c(1,1,1,1))
+plot(rt_graph, layout=glay,
+     vertex.color="gray25",
+     vertex.size=(degree(rt_graph, mode = "in")), #sized by in-degree centrality
+     vertex.label.family="sans",
+     vertex.shape="circle",  #can also try "square", "rectangle", etc. More in igraph manual
+     vertex.label.color=hsv(h=0, s=0, v=.95, alpha=0.5),
+     vertex.label.cex=(degree(rt_graph, mode = "in"))/300, #sized by in-degree centrality
+     edge.arrow.size=0.8,
+     edge.arrow.width=0.5,
+     edge.width=edge_attr(rt_graph)$n/10, #sized by edge weight
+     edge.color=hsv(h=.95, s=1, v=.7, alpha=0.5))
+title("Retweet Network", cex.main=1, col.main="gray95")
+
+
+```
+
+
+```{r}
+wc <- cluster_walktrap(rt_graph)
+members <- membership(wc)
+d3_rt <- igraph_to_networkD3(rt_graph, group = members)
+
+forceNetwork(Links = d3_rt$links, Nodes = d3_rt$nodes, 
+             Source = 'source', Target = 'target', 
+             NodeID = 'name', Group = 'group')
+```
+
+

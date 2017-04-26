@@ -1,0 +1,78 @@
+---
+title: "Find Twitter flowwer"
+output: html_notebook
+---
+
+# Required packages
+```{r}
+install.packages("ggmap")
+install.packages("twitteR") 
+install.packages("RCurl")
+install.packages("RJSONIN")
+install.packages("leaflet")
+install.packages("data.table")
+```
+
+
+```{r}
+library(twitteR)
+api_key <- "T8CKcDTkHJJIlSJkKWCIAJqeF"
+api_secret <- "CK4wWEPHd2tliA5ghVY3eBwlCEXE7m5FZsie0gitfN4dSdH9VD"
+access_token <- "844615642993082368-RJIO1uLbjPeribYc3oUEfvy9cA2C6dS"
+access_token_secret <- "JVvpbJ5dARihNkcWLun4uCh6yTqOY4MZZrOibk6JzD9p1"
+setup_twitter_oauth(api_key, api_secret, access_token, access_token_secret)
+```
+
+
+
+
+```{r}
+lucaspuente <- getUser("lucaspuente")
+location(lucaspuente)
+lucaspuente_follower_IDs<-lucaspuente$getFollowers(retryOnRateLimit=180)
+length(lucaspuente_follower_IDs)
+```
+
+#organize the data 
+
+```{r}
+library(data.table)
+lucaspuente_followers_df = rbindlist(lapply(lucaspuente_follower_IDs,as.data.frame))
+head(lucaspuente_followers_df$location, 10)
+lucaspuente_followers_df<-subset(lucaspuente_followers_df, location!="")
+
+```
+
+# Get Follower's location
+
+#create a function for getting coordinates from Google Map API.We use the code published by Lucas Puente (http://lucaspuente.github.io/notes/2016/04/05/Mapping-Twitter-Followers)
+
+```{r}
+library(RJSONIO)
+lucaspuente_followers_df$location<-gsub("%", " ",lucaspuente_followers_df$location)
+
+source("https://raw.githubusercontent.com/LucasPuente/geocoding/master/geocode_helpers.R")
+source("https://raw.githubusercontent.com/LucasPuente/geocoding/master/modified_geocode.R")
+geocode_apply<-function(x){ geocode(x, source = "google", output = "all", api_key="AIzaSyD_FDUqOsJMwCUUxiUK8rqw65kCqObOme8")} 
+
+geocode_results<-sapply(lucaspuente_followers_df$location, geocode_apply, simplify = F)
+length(geocode_results)
+
+```
+
+# we will now clean Geocoding DATA
+
+```{r}
+condition_a <- sapply(geocode_results, function(x) x["status"]=="OK")
+geocode_results<-geocode_results[condition_a]
+
+
+
+
+```
+
+
+
+
+
+
